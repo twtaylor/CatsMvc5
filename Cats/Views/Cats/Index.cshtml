@@ -8,22 +8,25 @@
 
 @Html.Partial("Modal")
 
-<div>
-    <button type="button" class="btn btn-default" id="btnCreate">Create a Cat</button>
-    <table id="cats" class="table">
-        <thead>
-            <tr>
-                <th></th>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Legs</th>
-                <th>Has Tail</th>
-                <th>Type</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+<div class="row">
+    <div class="col-md-2">
+        <button type="button" class="btn btn-default" id="btnCreate">Create a Cat</button>
+    </div>
+    <div class="col-md-10">
+        <table id="cats" class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Legs</th>
+                    <th>Has Tail</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </div>
 
 <script type="text/javascript">
