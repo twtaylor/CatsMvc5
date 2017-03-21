@@ -1,0 +1,153 @@
+﻿@{
+    ViewBag.Title = "Cats Main Page";
+}
+
+<div class="jumbotron">
+    Super Cat Tracking App
+</div>
+
+@Html.Partial("Modal")
+
+<div>
+    <button type="button" class="btn btn-default" id="btnCreate">Create a Cat</button>
+    <table id="cats" class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Legs</th>
+                <th>Has Tail</th>
+                <th>Type</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    // normally I put this into a singleton
+    var cachedDs;
+
+    function loadTable() {
+        $.ajax({
+            url: '/api/Service',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                cachedDs = JSON.parse(data);
+                loadTableContents(cachedDs);
+            },
+            error: function (err) {
+                console.error(err);
+            }
+        });
+    }
+
+    function loadTableContents(data) {
+        var body = '';
+        $.each(data, function (index, cat) {
+            body += "<tr><td><a href='#' class='edit ml8'><i class='glyphicon glyphicon-edit'></i></a><a href='#' class='remove ml8'><i class='glyphicon glyphicon-remove'></i></a></td>";
+            body += "<td>" + cat.ID + "</td><td> " + cat.Name + "</td><td>" + cat.Legs + "</td><td>" + cat.HasTail + "</td><td>" + cat.Type + "</td></tr>";
+        });
+        $('#cats').children('tbody').html(body);
+
+        bindModalEvents()
+    }
+
+    function loadModalContents(data) {
+        if (data) {
+            $('#hdnId').val(data.ID);
+            $('#inputName').val(data.Name);
+            $('#inputLegs').val(data.Legs);
+            $('#inputType').val(data.Type);
+            $('#dropdownHasTail').text((data.hasTail) ? "Has Tail" : "No Tail");
+        }
+        else {
+            $('#hdnId').val('');
+            $('#inputName').val('');
+            $('#inputLegs').val(4);
+            $('#inputType').val('');
+            $('#dropdownHasTail').text("Has Tail");
+        }
+    }
+
+    function bindModalEvents() {
+        $('a.remove').on('click', function () {
+            // retrieve id from the row
+            var id = parseInt($(this).closest('tr').children('td:nth-child(2)').html());
+
+            $.ajax({
+                url: '/api/Service/' + id,
+                type: 'DELETE',
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    loadTable();
+                },
+                error: function () {
+                    console.error('Cat could not be deleted.');
+                }
+            });
+        });
+
+        $('#btnCreate').on('click', function () {
+            loadModalContents(null);
+            $('#catsModal').modal({ show: true });
+            return false;
+        });
+
+        $('#btnSave').on('click', function () {
+            var id = $('#hdnId').val();
+            saveCatInModal((id == '') ? 'POST' : 'PUT');
+            return false;
+        });
+
+        $(".tailItem").on('click', function () {
+            $('#dropdownHasTail').text($(this).text());
+            return false;
+        });
+
+        $('a.edit').on('click', function () {
+            // 2nd item is where our ID lies
+            var id = parseInt($(this).closest('tr').children('td:nth-child(2)').html());
+            var cat = cachedDs.find(function (o) { return o.ID === id; });
+
+            loadModalContents(cat);
+            $('#catsModal').modal({ show: true });
+
+            return false;
+        });
+    }
+
+    function saveCatInModal(type) {
+        var cat = {
+            ID: parseInt($('#hdnId').val()),
+            Name: $('#inputName').val(),
+            Legs: parseInt($('#inputLegs').val()),
+            Type: $('#inputType').val(),
+            HasTail: (($('#dropdownHasTail').text() == "Has Tail") ? true : false)
+        };
+
+        $.ajax({
+            url: '/api/Service',
+            type: type,
+            data: JSON.stringify(cat),
+            contentType: "application/json;charset=utf-8",
+            success: function (data) {
+                loadTable();
+                $('#catsModal').modal('hide');
+            },
+            error: function () {
+                console.error('Cat could not be updated');
+            }
+        });
+    }
+
+    // load our table
+    $(document).ready(function() {
+        loadTable();
+    });
+    
+    
+</script>
